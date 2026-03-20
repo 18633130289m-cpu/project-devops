@@ -1,0 +1,56 @@
+
+services:
+  # MySQL数据库
+  mysql:
+    image: mysql:5.7
+    container_name: devops-mysql
+    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: root123456
+      MYSQL_DATABASE: devops
+    volumes:
+      - mysql-data:/var/lib/mysql  # 数据持久化（关键）
+    networks:
+      - devops-network
+
+  # Redis缓存
+  redis:
+    image: redis:alpine
+    container_name: devops-redis
+    restart: always
+    volumes:
+      - redis-data:/data  # Redis持久化
+    networks:
+      - devops-network
+
+  # 后端Flask
+  backend:
+    build: ./backend
+    container_name: devops-backend
+    restart: always
+    depends_on:
+      - mysql
+      - redis
+    networks:
+      - devops-network
+
+  # Nginx代理
+  nginx:
+    build: ./nginx
+    container_name: devops-nginx
+    restart: always
+    ports:
+      - "80:80"  # 暴露80端口给外网访问
+    depends_on:
+      - backend
+    networks:
+      - devops-network
+
+# 数据卷（保证容器删除数据不丢）
+volumes:
+  mysql-data:
+  redis-data:
+
+# 自定义网络，服务互通
+networks:
+  devops-network:
