@@ -6,7 +6,7 @@ echo "==================== 开始自动化部署 ===================="
 # 1. 检查Docker是否安装
 if ! command -v docker &> /dev/null; then
     echo "安装 Docker..."
-    yum install -y docker || apt install -y docker.io
+    yum install -y docker || apt install -y docker-ce docker-ce-cli containerd.io
     systemctl start docker
     systemctl enable docker
 fi
@@ -28,4 +28,4 @@ echo "检查容器状态..."
 docker compose ps
 
 echo -e "\n==================== 部署完成！===================="
-echo "访问地址：http://192.168.0.135"
+echo "访问地址：http://$(hostname -I | awk '{print $1}')"
