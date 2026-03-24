@@ -14,12 +14,12 @@ MEM_THRESHOLD=85
 CPU_THRESHOLD=90
 DISK_THRESHOLD=85
 # 日志文件路径
-SYS_LOG="/root/devops-project/logs/access.log"
-ERROR_LOG="/root/devops-project/logs/error.log"
+SYS_LOG="/root/project-devops/logs/access.log"
+ERROR_LOG="/root/project-devops/logs/error.log"
 # 日志清理天数
 LOG_CLEAN_DAY=30
 # 备份源目录 & 备份目标目录
-BACKUP_SRC="/root/devops-project"
+BACKUP_SRC="/root/project-devops"
 BACKUP_DIR="/home/backup"
 # 管理员邮箱
 ADMIN_EMAIL="18633130289@163.com"

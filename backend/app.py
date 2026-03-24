@@ -18,8 +18,8 @@ redis_client = redis.Redis(
 def get_db_connection():
     return pymysql.connect(
         host='mysql',
-        user='root',
-        password='123456',  # 与你的 docker-compose.yml 保持一致
+        user='flask_user',
+        password='flask_pass',
         database='message_db',
         charset='utf8mb4',
         cursorclass=pymysql.cursors.DictCursor
@@ -53,7 +53,7 @@ def add_message():
 
     # 非空校验
     if not content:
-        return jsonify({"code": 400, "msg": "留言内容不能为空"}), 400
+        return jsonify({"code": 400, "msg": "Empty"}), 400
 
     try:
         # 写入 MySQL
@@ -67,22 +67,25 @@ def add_message():
         # 新增后删除缓存（保证下次查询是最新数据）
         redis_client.delete('message_list')
 
-        return jsonify({"code": 200, "msg": "留言发布成功"})
+        return jsonify({"code": 200, "msg": "Successful"})
 
     except Exception as e:
-        return jsonify({"code": 500, "msg": "发布失败", "error": str(e)}), 500
+        return jsonify({"code": 500, "msg": "fail", "error": str(e)}), 500
 
 # ====================== 2. 查询留言接口（Redis 缓存优先） ======================
+import json
+
 @app.route('/list')
 def get_messages():
     # 先从 Redis 取
     cache_data = redis_client.get('message_list')
 
     if cache_data:
+        # Redis 已有数据，直接返回 JSON
         return jsonify({
             "code": 200,
             "source": "redis",
-            "data": eval(cache_data)  # 字符串转回列表
+            "data": json.loads(cache_data)  # 使用 json 解析
         })
 
     # Redis 没有 → 查 MySQL
@@ -94,8 +97,13 @@ def get_messages():
             messages = cursor.fetchall()
         conn.close()
 
-        # 存入 Redis，缓存 60 秒
-        redis_client.setex('message_list', 60, str(messages))
+        # 把 datetime 转成字符串，避免序列化报错
+        for msg in messages:
+            if isinstance(msg['create_time'], datetime):
+                msg['create_time'] = msg['create_time'].strftime("%Y-%m-%d %H:%M:%S")
+
+        # 存入 Redis，缓存 60 秒（用 json.dumps）
+        redis_client.setex('message_list', 60, json.dumps(messages, ensure_ascii=False))
 
         return jsonify({
             "code": 200,
@@ -120,12 +128,22 @@ def index():
 # ====================== 4. 健康检查 ======================
 @app.route('/health')
 def health():
-    return {
-        "status": "ok",
-        "redis": "connected",
-        "mysql": "connected",
-        "time": time.time()
-    }
+    try:
+        conn = get_db_connection()
+        conn.close()
+        mysql_status = "connected"
+    except Exception as e:
+        mysql_status = f"failed: {e}"
 
+    try:
+        redis_client.ping()
+        redis_status = "connected"
+    except Exception as e:
+        redis_status = f"failed: {e}"
+
+    return {
+        "mysql": mysql_status,
+        "redis": redis_status
+    }
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=5000, debug=True)
