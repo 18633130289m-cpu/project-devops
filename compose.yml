@@ -1,4 +1,5 @@
 services:
+  # 数据库：持久化业务与运维记录
   mysql:
     image: mysql:5.7
     container_name: devops-mysql
@@ -12,6 +13,7 @@ services:
     networks:
       - devops-network
 
+  # 缓存：热点数据、查询结果缓存
   redis:
     image: redis:alpine
     container_name: devops-redis
@@ -21,6 +23,7 @@ services:
     networks:
       - devops-network
 
+  # 后端 API 服务（仅内部暴露给 nginx）
   backend:
     build: ./backend
     container_name: devops-backend
@@ -33,6 +36,7 @@ services:
     expose:
       - "5000"
 
+  # 前端 Vue 静态站点（构建后由 nginx 提供）
   frontend:
     build: ./frontend
     container_name: devops-frontend
@@ -42,6 +46,7 @@ services:
     expose:
       - "80"
 
+  # 统一入口：路由到前后端
   nginx:
     build: ./nginx
     container_name: devops-nginx

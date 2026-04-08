@@ -22,6 +22,9 @@ from extensions import (
 api_bp = Blueprint("api", __name__)
 
 
+# -----------------------------
+# 消息接口（留言发布 + 查询）
+# -----------------------------
 @api_bp.route("/api/messages", methods=["GET", "POST"])
 def messages_api():
     if request.method == "POST":
@@ -60,14 +63,19 @@ def messages_api():
 
 @api_bp.route("/add", methods=["POST"])
 def add_compat_api():
+    """兼容旧版本接口：内部复用 /api/messages 逻辑。"""
     return messages_api()
 
 
 @api_bp.route("/list", methods=["GET"])
 def list_compat_api():
+    """兼容旧版本接口：内部复用 /api/messages 逻辑。"""
     return messages_api()
 
 
+# -----------------------------
+# 基础健康检查
+# -----------------------------
 @api_bp.route("/api/health")
 @api_bp.route("/health")
 def health_api():
@@ -89,6 +97,7 @@ def health_api():
 
 @api_bp.route("/api/metrics")
 def metrics_api():
+    """采集当前指标并写入 monitor_records，同时返回最近历史。"""
     current = collect_metrics_snapshot()
     health = health_api().json
     service_status = "ok" if health["mysql"] == "connected" and health["redis"] == "connected" else "degraded"
@@ -106,6 +115,9 @@ def metrics_api():
     return jsonify({"code": 200, "current": current, "history": serialize_datetimes(history)})
 
 
+# -----------------------------
+# 备份与恢复
+# -----------------------------
 @api_bp.route("/api/backups", methods=["GET", "POST"])
 def backups_api():
     BACKUP_DIR.mkdir(parents=True, exist_ok=True)
@@ -137,6 +149,7 @@ def backups_api():
 
 @api_bp.route("/api/backups/<int:backup_id>/restore", methods=["POST"])
 def restore_backup_api(backup_id):
+    """将指定备份记录标记为 restored（演示型恢复流程）。"""
     conn = get_db_connection()
     with conn.cursor() as cursor:
         cursor.execute("SELECT id FROM backup_records WHERE id=%s", (backup_id,))
@@ -150,6 +163,9 @@ def restore_backup_api(backup_id):
     return jsonify({"code": 200, "msg": "restore done", "backup_id": backup_id})
 
 
+# -----------------------------
+# 用户管理
+# -----------------------------
 @api_bp.route("/api/users", methods=["GET", "POST"])
 def users_api():
     if request.method == "POST":
@@ -186,6 +202,9 @@ def users_api():
     return jsonify({"code": 200, "source": "mysql", "data": rows})
 
 
+# -----------------------------
+# 告警记录
+# -----------------------------
 @api_bp.route("/api/alerts", methods=["GET", "POST"])
 def alerts_api():
     if request.method == "POST":
@@ -210,6 +229,9 @@ def alerts_api():
     return jsonify({"code": 200, "data": serialize_datetimes(rows)})
 
 
+# -----------------------------
+# 日志与统计
+# -----------------------------
 @api_bp.route("/api/logs")
 def logs_api():
     filename = request.args.get("filename", "access.log")
@@ -242,4 +264,5 @@ def stats_api():
 
 
 def setup_app_data():
+    """应用启动初始化：当前仅负责建表。"""
     init_tables()

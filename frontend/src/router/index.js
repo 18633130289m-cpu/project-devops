@@ -5,6 +5,7 @@ import MonitorView from '../views/MonitorView.vue'
 import BackupView from '../views/BackupView.vue'
 import LogsView from '../views/LogsView.vue'
 
+// 页面路由：默认跳转到管理页，便于首次使用。
 export default createRouter({
   history: createWebHistory(),
   routes: [

@@ -27,6 +27,7 @@ redis_client = redis.Redis(host=REDIS_HOST, port=REDIS_PORT, db=0, decode_respon
 
 
 def get_db_connection():
+    """获取 MySQL 连接（字典游标）。"""
     return pymysql.connect(
         host=MYSQL_HOST,
         user=MYSQL_USER,
@@ -40,6 +41,7 @@ def get_db_connection():
 
 
 def init_tables():
+    """初始化演示项目所需的业务/运维数据表。"""
     ddl = [
         """
         CREATE TABLE IF NOT EXISTS messages (
@@ -99,6 +101,7 @@ def init_tables():
 
 
 def serialize_datetimes(rows):
+    """将查询结果中的 datetime 转为字符串，便于 JSON 序列化。"""
     for row in rows:
         for k, v in row.items():
             if isinstance(v, datetime):
@@ -107,6 +110,7 @@ def serialize_datetimes(rows):
 
 
 def hash_password(raw_password):
+    """简单哈希（演示用途）。"""
     return hashlib.sha256(raw_password.encode("utf-8")).hexdigest()
 
 
@@ -127,6 +131,7 @@ def get_disk_used_percent():
 
 
 def collect_metrics_snapshot():
+    """采集系统监控快照（负载、内存、磁盘、操作系统信息）。"""
     return {
         "cpu_load": round(os.getloadavg()[0], 2) if hasattr(os, "getloadavg") else 0.0,
         "memory_used_percent": get_memory_used_percent(),
@@ -136,6 +141,7 @@ def collect_metrics_snapshot():
 
 
 def build_message_filter_sql(keyword, start_time, end_time):
+    """按查询条件动态拼接 where 子句与参数。"""
     where_clauses = []
     params = []
     if keyword:
@@ -153,6 +159,7 @@ def build_message_filter_sql(keyword, start_time, end_time):
 
 
 def list_messages(keyword="", start_time="", end_time="", limit=20):
+    """分页查询消息，带条件过滤与最大条数保护。"""
     safe_limit = min(max(int(limit), 1), MAX_QUERY_LIMIT)
     where_sql, params = build_message_filter_sql(keyword, start_time, end_time)
     sql = f"SELECT id, content, create_time FROM messages{where_sql} ORDER BY id DESC LIMIT %s"
@@ -170,6 +177,7 @@ def message_cache_key(keyword, start_time, end_time, limit):
 
 
 def read_log_lines(filename, limit=100):
+    """读取日志文件最后 N 行。"""
     path = LOG_DIR / filename
     if not path.exists():
         return []
@@ -179,4 +187,5 @@ def read_log_lines(filename, limit=100):
 
 
 def set_json_cache(key, value, ttl=CACHE_TTL_SECONDS):
+    """将对象序列化后写入 Redis，并设置 TTL。"""
     redis_client.setex(key, ttl, json.dumps(value, ensure_ascii=False))

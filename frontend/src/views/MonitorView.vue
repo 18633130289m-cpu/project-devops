@@ -37,12 +37,14 @@ const store = useAppStore()
 const metrics = ref({})
 const history = ref([])
 
+// 刷新监控快照与历史表。
 async function loadMetrics() {
   const res = await getMetrics()
   metrics.value = res.current || {}
   history.value = res.history || []
 }
 
+// 独立健康检查，结果写入 Pinia。
 async function loadHealth() {
   const res = await getHealth()
   store.setHealth(res)

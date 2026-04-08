@@ -66,12 +66,14 @@ const messageSource = ref('-')
 const userForm = ref({ username: '', password: '', role: 'viewer' })
 const users = ref([])
 
+// 按筛选条件查询留言。
 async function loadMessages() {
   const res = await getMessages(query.value)
   messages.value = res.data || []
   messageSource.value = res.source || '-'
 }
 
+// 新建留言后刷新列表。
 async function onCreateMessage() {
   if (!messageContent.value) return
   await createMessage(messageContent.value)
@@ -79,11 +81,13 @@ async function onCreateMessage() {
   await loadMessages()
 }
 
+// 获取用户列表（后端自带缓存）。
 async function loadUsers() {
   const res = await getUsers()
   users.value = res.data || []
 }
 
+// 新建用户后回填默认表单并刷新列表。
 async function onCreateUser() {
   await createUser(userForm.value)
   userForm.value = { username: '', password: '', role: 'viewer' }

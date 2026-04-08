@@ -30,17 +30,20 @@ import { createBackup, getBackups, restoreBackup } from '../api/devops'
 const note = ref('')
 const backups = ref([])
 
+// 查询备份列表。
 async function loadBackups() {
   const res = await getBackups()
   backups.value = res.data || []
 }
 
+// 创建备份并刷新记录。
 async function onCreateBackup() {
   await createBackup(note.value)
   note.value = ''
   await loadBackups()
 }
 
+// 执行恢复（演示型接口）并刷新记录。
 async function onRestoreBackup(id) {
   await restoreBackup(id)
   await loadBackups()

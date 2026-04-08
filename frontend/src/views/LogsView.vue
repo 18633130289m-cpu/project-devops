@@ -21,6 +21,7 @@ const filename = ref('access.log')
 const limit = ref(200)
 const lines = ref([])
 
+// 按文件名和行数读取后端日志内容。
 async function loadLogs() {
   const res = await getLogs(filename.value, limit.value)
   lines.value = res.lines || []
