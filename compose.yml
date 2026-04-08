@@ -1,19 +1,17 @@
 services:
-  # MySQL数据库
   mysql:
     image: mysql:5.7
     container_name: devops-mysql
     restart: always
     environment:
       MYSQL_ROOT_PASSWORD: 123456
-      MYSQL_DATABASE: message_db    # 必须和 app.py 里的数据库名一致
+      MYSQL_DATABASE: message_db
     volumes:
       - mysql-data:/var/lib/mysql
       - ./init_mysql.sql:/docker-entrypoint-initdb.d/init_mysql.sql:ro
     networks:
       - devops-network
 
-  # Redis缓存
   redis:
     image: redis:alpine
     container_name: devops-redis
@@ -23,7 +21,6 @@ services:
     networks:
       - devops-network
 
-  # 后端Flask
   backend:
     build: ./backend
     container_name: devops-backend
@@ -33,17 +30,27 @@ services:
       - redis
     networks:
       - devops-network
-    ports:
-      - "5000:5000"
-  # Nginx代理
+    expose:
+      - "5000"
+
+  frontend:
+    build: ./frontend
+    container_name: devops-frontend
+    restart: always
+    networks:
+      - devops-network
+    expose:
+      - "80"
+
   nginx:
     build: ./nginx
     container_name: devops-nginx
     restart: always
     ports:
-      - 80:80
+      - "80:80"
     depends_on:
       - backend
+      - frontend
     networks:
       - devops-network
 

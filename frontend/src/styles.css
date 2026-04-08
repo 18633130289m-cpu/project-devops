@@ -1,0 +1,18 @@
+* { box-sizing: border-box; }
+body { margin: 0; font-family: Arial, sans-serif; background: #f5f7fb; color: #1f2937; }
+.app-wrap { max-width: 1100px; margin: 0 auto; padding: 20px; }
+.app-header { margin-bottom: 12px; }
+.muted { color: #6b7280; font-size: 12px; }
+.tabs { display: flex; gap: 8px; margin-bottom: 14px; flex-wrap: wrap; }
+.tab { text-decoration: none; color: #fff; background: #2563eb; padding: 8px 12px; border-radius: 8px; }
+.tab.router-link-active { background: #1d4ed8; }
+.card { background: #fff; border-radius: 10px; padding: 16px; margin-bottom: 14px; box-shadow: 0 2px 8px rgba(0,0,0,.06); }
+.grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(210px, 1fr)); gap: 10px; }
+button { border: 0; border-radius: 8px; padding: 8px 12px; background: #2563eb; color: #fff; cursor: pointer; }
+button.secondary { background: #4b5563; }
+input, select { padding: 8px; border: 1px solid #d1d5db; border-radius: 8px; margin-right: 8px; }
+table { width: 100%; border-collapse: collapse; }
+th, td { border-bottom: 1px solid #e5e7eb; padding: 8px; text-align: left; font-size: 14px; }
+.ok { color: #16a34a; }
+.warn { color: #dc2626; }
+pre { background: #111827; color: #d1d5db; border-radius: 8px; padding: 12px; max-height: 360px; overflow: auto; }
